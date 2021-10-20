@@ -1,6 +1,19 @@
-import {Entity, model, property} from '@loopback/repository';
+import {belongsTo, Entity, hasMany, model, property} from '@loopback/repository';
+import {CupData} from './cup-data.model';
+import {Match} from './match.model';
 
-@model()
+@model({
+  settings: {
+    foreignKeys: {
+      fk_referee_cupData: {
+        name: 'fk_referee_cupData',
+        entity: 'CupData',
+        entityKey: 'id',
+        foreignKey: 'cupDataId',
+      },
+    },
+  },
+})
 export class Referee extends Entity {
   @property({
     type: 'number',
@@ -45,6 +58,11 @@ export class Referee extends Entity {
   })
   country: string;
 
+  @belongsTo(() => CupData)
+  cupDataId: number;
+
+  @hasMany(() => Match)
+  matches: Match[];
 
   constructor(data?: Partial<Referee>) {
     super(data);

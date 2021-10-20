@@ -1,6 +1,20 @@
-import {Entity, model, property} from '@loopback/repository';
+import {belongsTo, Entity, hasMany, hasOne, model, property} from '@loopback/repository';
+import {Dt} from './dt.model';
+import {Group} from './group.model';
+import {Player} from './player.model';
 
-@model()
+@model({
+  settings: {
+    foreignKeys: {
+      fk_country_group: {
+        name: 'fk_country_group',
+        entity: 'Group',
+        entityKey: 'id',
+        foreignKey: 'groupId',
+      },
+    },
+  },
+})
 export class Country extends Entity {
   @property({
     type: 'number',
@@ -15,6 +29,14 @@ export class Country extends Entity {
   })
   countryName: string;
 
+  @belongsTo(() => Group)
+  groupId: number;
+
+  @hasOne(() => Dt)
+  dt: Dt;
+
+  @hasMany(() => Player)
+  players: Player[];
 
   constructor(data?: Partial<Country>) {
     super(data);

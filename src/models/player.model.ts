@@ -1,6 +1,18 @@
-import {Entity, model, property} from '@loopback/repository';
+import {belongsTo, Entity, model, property} from '@loopback/repository';
+import {Country} from './country.model';
 
-@model()
+@model({
+  settings: {
+    foreignKeys: {
+      fk_player_country: {
+        name: 'fk_player_country',
+        entity: 'Country',
+        entityKey: 'id',
+        foreignKey: 'countryId',
+      },
+    },
+  },
+})
 export class Player extends Entity {
   @property({
     type: 'number',
@@ -86,6 +98,8 @@ export class Player extends Entity {
   })
   height: string;
 
+  @belongsTo(() => Country)
+  countryId: number;
 
   constructor(data?: Partial<Player>) {
     super(data);

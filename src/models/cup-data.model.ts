@@ -1,4 +1,8 @@
-import {Entity, model, property} from '@loopback/repository';
+import {Entity, model, property, hasMany} from '@loopback/repository';
+import {Group} from './group.model';
+import {Campus} from './campus.model';
+import {Match} from './match.model';
+import {Referee} from './referee.model';
 
 @model()
 export class CupData extends Entity {
@@ -33,6 +37,17 @@ export class CupData extends Entity {
   })
   organizers: string;
 
+  @hasMany(() => Group)
+  groups: Group[];
+
+  @hasMany(() => Campus)
+  campuses: Campus[];
+
+  @hasMany(() => Match)
+  matches: Match[];
+
+  @hasMany(() => Referee)
+  referees: Referee[];
 
   constructor(data?: Partial<CupData>) {
     super(data);
