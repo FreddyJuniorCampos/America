@@ -16,3 +16,4 @@ export * from './player-country.controller';
 export * from './referee-match.controller';
 export * from './referee.controller';
 
+export * from './player.controller';
