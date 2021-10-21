@@ -4,27 +4,22 @@ import {
   Filter,
   FilterExcludingWhere,
   repository,
-  Where,
+  Where
 } from '@loopback/repository';
 import {
-  post,
-  param,
-  get,
-  getModelSchemaRef,
-  patch,
-  put,
-  del,
-  requestBody,
-  response,
+  del, get,
+  getModelSchemaRef, HttpErrors, param, patch, post, put, requestBody,
+  response
 } from '@loopback/rest';
 import {Country} from '../models';
-import {CountryRepository} from '../repositories';
+import {CountryRepository, GroupRepository} from '../repositories';
 
 export class CountryController {
   constructor(
     @repository(CountryRepository)
-    public countryRepository : CountryRepository,
-  ) {}
+    public countryRepository: CountryRepository,
+    @repository(GroupRepository) protected groupRepository: GroupRepository,
+  ) { }
 
   @post('/countries')
   @response(200, {
@@ -44,6 +39,10 @@ export class CountryController {
     })
     country: Omit<Country, 'id'>,
   ): Promise<Country> {
+    const fullGroup = await this.fullGroup(country.groupId);
+    if (fullGroup) {
+      throw new HttpErrors[409]('The group is full (maximum 5 countries per group)');
+    }
     return this.countryRepository.create(country);
   }
 
@@ -76,25 +75,6 @@ export class CountryController {
     return this.countryRepository.find(filter);
   }
 
-  @patch('/countries')
-  @response(200, {
-    description: 'Country PATCH success count',
-    content: {'application/json': {schema: CountSchema}},
-  })
-  async updateAll(
-    @requestBody({
-      content: {
-        'application/json': {
-          schema: getModelSchemaRef(Country, {partial: true}),
-        },
-      },
-    })
-    country: Country,
-    @param.where(Country) where?: Where<Country>,
-  ): Promise<Count> {
-    return this.countryRepository.updateAll(country, where);
-  }
-
   @get('/countries/{id}')
   @response(200, {
     description: 'Country model instance',
@@ -108,6 +88,37 @@ export class CountryController {
     @param.path.number('id') id: number,
     @param.filter(Country, {exclude: 'where'}) filter?: FilterExcludingWhere<Country>
   ): Promise<Country> {
+    const include = [
+      {
+        relation: 'players',
+        scope: {
+          fields: [
+            'firstName',
+            'lastName',
+            'numberShirt',
+            'position',
+            'countryId'
+          ],
+        }
+      },
+      {
+        relation: 'dt',
+        scope: {
+          fields: [
+            'firstName',
+            'lastName',
+            'countryId'
+          ]
+        }
+      },
+    ];
+    if (filter) {
+      filter.include = include;
+    } else {
+      filter = {
+        include: include
+      };
+    }
     return this.countryRepository.findById(id, filter);
   }
 
@@ -146,5 +157,21 @@ export class CountryController {
   })
   async deleteById(@param.path.number('id') id: number): Promise<void> {
     await this.countryRepository.deleteById(id);
+  }
+
+  async fullGroup(
+    id: number | undefined,
+  ) {
+    const filter = {
+      include: [
+        'countries'
+      ],
+    };
+    const countriesGroup = await this.groupRepository.findById(id, filter);
+    if (countriesGroup.countries) {
+      if (countriesGroup.countries.length >= 5)
+        return true
+    }
+    return false;
   }
 }

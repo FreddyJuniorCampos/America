@@ -4,18 +4,12 @@ import {
   Filter,
   FilterExcludingWhere,
   repository,
-  Where,
+  Where
 } from '@loopback/repository';
 import {
-  post,
-  param,
-  get,
-  getModelSchemaRef,
-  patch,
-  put,
-  del,
-  requestBody,
-  response,
+  del, get,
+  getModelSchemaRef, param, patch, post, put, requestBody,
+  response
 } from '@loopback/rest';
 import {Match} from '../models';
 import {MatchRepository} from '../repositories';
@@ -37,13 +31,14 @@ export class MatchController {
         'application/json': {
           schema: getModelSchemaRef(Match, {
             title: 'NewMatch',
-            exclude: ['id'],
+            exclude: ['id', 'cupDataId'],
           }),
         },
       },
     })
     match: Omit<Match, 'id'>,
   ): Promise<Match> {
+    match = { ...match, cupDataId: 1};
     return this.matchRepository.create(match);
   }
 
@@ -74,25 +69,6 @@ export class MatchController {
     @param.filter(Match) filter?: Filter<Match>,
   ): Promise<Match[]> {
     return this.matchRepository.find(filter);
-  }
-
-  @patch('/matches')
-  @response(200, {
-    description: 'Match PATCH success count',
-    content: {'application/json': {schema: CountSchema}},
-  })
-  async updateAll(
-    @requestBody({
-      content: {
-        'application/json': {
-          schema: getModelSchemaRef(Match, {partial: true}),
-        },
-      },
-    })
-    match: Match,
-    @param.where(Match) where?: Where<Match>,
-  ): Promise<Count> {
-    return this.matchRepository.updateAll(match, where);
   }
 
   @get('/matches/{id}')

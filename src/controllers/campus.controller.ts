@@ -1,21 +1,12 @@
 import {
-  Count,
-  CountSchema,
   Filter,
   FilterExcludingWhere,
-  repository,
-  Where,
+  repository
 } from '@loopback/repository';
 import {
-  post,
-  param,
-  get,
-  getModelSchemaRef,
-  patch,
-  put,
-  del,
-  requestBody,
-  response,
+  del, get,
+  getModelSchemaRef, param, patch, post, put, requestBody,
+  response
 } from '@loopback/rest';
 import {Campus} from '../models';
 import {CampusRepository} from '../repositories';
@@ -37,25 +28,15 @@ export class CampusController {
         'application/json': {
           schema: getModelSchemaRef(Campus, {
             title: 'NewCampus',
-            exclude: ['id'],
+            exclude: ['id', 'cupDataId'],
           }),
         },
       },
     })
     campus: Omit<Campus, 'id'>,
   ): Promise<Campus> {
+    campus = { ...campus, cupDataId: 1 };
     return this.campusRepository.create(campus);
-  }
-
-  @get('/campuses/count')
-  @response(200, {
-    description: 'Campus model count',
-    content: {'application/json': {schema: CountSchema}},
-  })
-  async count(
-    @param.where(Campus) where?: Where<Campus>,
-  ): Promise<Count> {
-    return this.campusRepository.count(where);
   }
 
   @get('/campuses')
@@ -74,25 +55,6 @@ export class CampusController {
     @param.filter(Campus) filter?: Filter<Campus>,
   ): Promise<Campus[]> {
     return this.campusRepository.find(filter);
-  }
-
-  @patch('/campuses')
-  @response(200, {
-    description: 'Campus PATCH success count',
-    content: {'application/json': {schema: CountSchema}},
-  })
-  async updateAll(
-    @requestBody({
-      content: {
-        'application/json': {
-          schema: getModelSchemaRef(Campus, {partial: true}),
-        },
-      },
-    })
-    campus: Campus,
-    @param.where(Campus) where?: Where<Campus>,
-  ): Promise<Count> {
-    return this.campusRepository.updateAll(campus, where);
   }
 
   @get('/campuses/{id}')

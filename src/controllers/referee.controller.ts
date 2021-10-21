@@ -4,18 +4,12 @@ import {
   Filter,
   FilterExcludingWhere,
   repository,
-  Where,
+  Where
 } from '@loopback/repository';
 import {
-  post,
-  param,
-  get,
-  getModelSchemaRef,
-  patch,
-  put,
-  del,
-  requestBody,
-  response,
+  del, get,
+  getModelSchemaRef, param, patch, post, put, requestBody,
+  response
 } from '@loopback/rest';
 import {Referee} from '../models';
 import {RefereeRepository} from '../repositories';
@@ -37,13 +31,14 @@ export class RefereeController {
         'application/json': {
           schema: getModelSchemaRef(Referee, {
             title: 'NewReferee',
-            exclude: ['id'],
+            exclude: ['id', 'cupDataId'],
           }),
         },
       },
     })
     referee: Omit<Referee, 'id'>,
   ): Promise<Referee> {
+    referee = { ...referee, cupDataId: 1 };
     return this.refereeRepository.create(referee);
   }
 
@@ -74,25 +69,6 @@ export class RefereeController {
     @param.filter(Referee) filter?: Filter<Referee>,
   ): Promise<Referee[]> {
     return this.refereeRepository.find(filter);
-  }
-
-  @patch('/referees')
-  @response(200, {
-    description: 'Referee PATCH success count',
-    content: {'application/json': {schema: CountSchema}},
-  })
-  async updateAll(
-    @requestBody({
-      content: {
-        'application/json': {
-          schema: getModelSchemaRef(Referee, {partial: true}),
-        },
-      },
-    })
-    referee: Referee,
-    @param.where(Referee) where?: Where<Referee>,
-  ): Promise<Count> {
-    return this.refereeRepository.updateAll(referee, where);
   }
 
   @get('/referees/{id}')

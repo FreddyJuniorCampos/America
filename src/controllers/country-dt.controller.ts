@@ -3,27 +3,29 @@ import {
   CountSchema,
   Filter,
   repository,
-  Where,
+  Where
 } from '@loopback/repository';
 import {
   del,
   get,
   getModelSchemaRef,
   getWhereSchemaFor,
+  HttpErrors,
   param,
   patch,
   post,
-  requestBody,
+  requestBody
 } from '@loopback/rest';
 import {
   Country,
-  Dt,
+  Dt
 } from '../models';
-import {CountryRepository} from '../repositories';
+import {CountryRepository, DtRepository} from '../repositories';
 
 export class CountryDtController {
   constructor(
     @repository(CountryRepository) protected countryRepository: CountryRepository,
+    @repository(DtRepository) protected dtRepository: DtRepository,
   ) { }
 
   @get('/countries/{id}/dt', {
@@ -60,13 +62,19 @@ export class CountryDtController {
         'application/json': {
           schema: getModelSchemaRef(Dt, {
             title: 'NewDtInCountry',
-            exclude: ['id'],
-            optional: ['countryId']
+            exclude: ['id', 'countryId'],
           }),
         },
       },
     }) dt: Omit<Dt, 'id'>,
   ): Promise<Dt> {
+    if (id !== undefined) {
+      const exists = await this.exists(id);
+      if (exists) {
+        throw new HttpErrors[409]('This country have a Dt');
+      }
+      dt = { ...dt, countryId: id };
+    }
     return this.countryRepository.dt(id).create(dt);
   }
 
@@ -107,4 +115,16 @@ export class CountryDtController {
   ): Promise<Count> {
     return this.countryRepository.dt(id).delete(where);
   }
+
+  async exists(
+    id: number | undefined,
+  ) {
+    const where: Where<Dt> = { 'countryId': id };
+    const dtNumber = await this.dtRepository.count(where);
+    if (dtNumber.count > 0) {
+      return true
+    }
+    return false;
+  }
+
 }

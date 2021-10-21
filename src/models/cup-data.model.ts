@@ -1,6 +1,6 @@
-import {Entity, model, property, hasMany} from '@loopback/repository';
-import {Group} from './group.model';
+import {Entity, hasMany, model, property} from '@loopback/repository';
 import {Campus} from './campus.model';
+import {Group} from './group.model';
 import {Match} from './match.model';
 import {Referee} from './referee.model';
 
@@ -12,6 +12,12 @@ export class CupData extends Entity {
     generated: true,
   })
   id?: number;
+
+  @property({
+    type: 'string',
+    required: true,
+  })
+  name: string;
 
   @property({
     type: 'date',

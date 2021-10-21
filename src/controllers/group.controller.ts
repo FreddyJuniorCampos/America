@@ -4,18 +4,12 @@ import {
   Filter,
   FilterExcludingWhere,
   repository,
-  Where,
+  Where
 } from '@loopback/repository';
 import {
-  post,
-  param,
-  get,
-  getModelSchemaRef,
-  patch,
-  put,
-  del,
-  requestBody,
-  response,
+  del, get,
+  getModelSchemaRef, param, patch, post, put, requestBody,
+  response
 } from '@loopback/rest';
 import {Group} from '../models';
 import {GroupRepository} from '../repositories';
@@ -23,8 +17,8 @@ import {GroupRepository} from '../repositories';
 export class GroupController {
   constructor(
     @repository(GroupRepository)
-    public groupRepository : GroupRepository,
-  ) {}
+    public groupRepository: GroupRepository,
+  ) { }
 
   @post('/groups')
   @response(200, {
@@ -37,13 +31,14 @@ export class GroupController {
         'application/json': {
           schema: getModelSchemaRef(Group, {
             title: 'NewGroup',
-            exclude: ['id'],
+            exclude: ['id', 'cupDataId'],
           }),
         },
       },
     })
     group: Omit<Group, 'id'>,
   ): Promise<Group> {
+    group = {...group, cupDataId: 1};
     return this.groupRepository.create(group);
   }
 
@@ -76,25 +71,6 @@ export class GroupController {
     return this.groupRepository.find(filter);
   }
 
-  @patch('/groups')
-  @response(200, {
-    description: 'Group PATCH success count',
-    content: {'application/json': {schema: CountSchema}},
-  })
-  async updateAll(
-    @requestBody({
-      content: {
-        'application/json': {
-          schema: getModelSchemaRef(Group, {partial: true}),
-        },
-      },
-    })
-    group: Group,
-    @param.where(Group) where?: Where<Group>,
-  ): Promise<Count> {
-    return this.groupRepository.updateAll(group, where);
-  }
-
   @get('/groups/{id}')
   @response(200, {
     description: 'Group model instance',
@@ -108,6 +84,13 @@ export class GroupController {
     @param.path.number('id') id: number,
     @param.filter(Group, {exclude: 'where'}) filter?: FilterExcludingWhere<Group>
   ): Promise<Group> {
+    if (filter) {
+      filter.include = ['countries'];
+    } else {
+      filter = {
+        include: ['countries']
+      };
+    }
     return this.groupRepository.findById(id, filter);
   }
 
