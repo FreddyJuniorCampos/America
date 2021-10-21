@@ -166,6 +166,82 @@ export class CountryController {
     await this.countryRepository.updateById(id, country);
   }
 
+  @get('/country/{name}')
+  @response(200, {
+    description: 'Country model instance',
+    content: {
+      'application/json': {
+        schema: getModelSchemaRef(Country, {includeRelations: true}),
+      },
+    },
+  })
+  async findByName(
+    @param.path.string('name') name: string,
+  ): Promise<Country> {
+    const filter = {
+      where: {
+        countryName: name
+      },
+      include: [
+        {
+          relation: 'players',
+          scope: {
+            fields: [
+              'firstName',
+              'lastName',
+              'numberShirt',
+              'position',
+              'countryId'
+            ],
+          }
+        },
+        {
+          relation: 'dt',
+          scope: {
+            fields: [
+              'firstName',
+              'lastName',
+              'countryId'
+            ]
+          }
+        },
+        {
+          relation: 'local_matches',
+          scope: {
+            fields: [
+              'date',
+              'result',
+              'state',
+              'tournamentPhase',
+              'localTeam',
+              'visitTeam'
+            ]
+          }
+        },
+        {
+          relation: 'visit_matches',
+          scope: {
+            fields: [
+              'date',
+              'result',
+              'state',
+              'tournamentPhase',
+              'localTeam',
+              'visitTeam'
+            ]
+          }
+        },
+      ]
+    }
+    const country = await this.countryRepository.findOne(filter);
+
+    if (country) {
+      return country;
+    } else {
+      throw new HttpErrors[404]("This country Don't exists in this competition")
+    }
+  }
+
   @put('/countries/{id}')
   @response(204, {
     description: 'Country PUT success',
