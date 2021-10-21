@@ -17,8 +17,8 @@ import {MatchRepository} from '../repositories';
 export class MatchController {
   constructor(
     @repository(MatchRepository)
-    public matchRepository : MatchRepository,
-  ) {}
+    public matchRepository: MatchRepository,
+  ) { }
 
   @post('/matches')
   @response(200, {
@@ -38,7 +38,7 @@ export class MatchController {
     })
     match: Omit<Match, 'id'>,
   ): Promise<Match> {
-    match = { ...match, cupDataId: 1};
+    match = {...match, cupDataId: 1};
     return this.matchRepository.create(match);
   }
 
@@ -84,6 +84,55 @@ export class MatchController {
     @param.path.number('id') id: number,
     @param.filter(Match, {exclude: 'where'}) filter?: FilterExcludingWhere<Match>
   ): Promise<Match> {
+    const include = [
+      {
+        relation: 'local_team',
+        scope: {
+          fields: [
+            'id',
+            'countryName',
+          ],
+        }
+      },
+      {
+        relation: 'visit_team',
+        scope: {
+          fields: [
+            'id',
+            'countryName',
+          ],
+        }
+      },
+      {
+        relation: 'referee',
+        scope: {
+          fields: [
+            'id',
+            'firstName',
+            'lastName',
+            'country',
+          ],
+        }
+      },
+      {
+        relation: 'campus',
+        scope: {
+          fields: [
+            'id',
+            'stadium',
+            'capacity',
+            'city',
+          ],
+        }
+      },
+    ];
+    if (filter) {
+      filter.include = include;
+    } else {
+      filter = {
+        include: include
+      };
+    }
     return this.matchRepository.findById(id, filter);
   }
 

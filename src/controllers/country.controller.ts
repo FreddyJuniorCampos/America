@@ -111,6 +111,32 @@ export class CountryController {
           ]
         }
       },
+      {
+        relation: 'local_matches',
+        scope: {
+          fields: [
+            'date',
+            'result',
+            'state',
+            'tournamentPhase',
+            'localTeam',
+            'visitTeam'
+          ]
+        }
+      },
+      {
+        relation: 'visit_matches',
+        scope: {
+          fields: [
+            'date',
+            'result',
+            'state',
+            'tournamentPhase',
+            'localTeam',
+            'visitTeam'
+          ]
+        }
+      },
     ];
     if (filter) {
       filter.include = include;

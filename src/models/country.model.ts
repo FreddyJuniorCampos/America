@@ -2,6 +2,7 @@ import {belongsTo, Entity, hasMany, hasOne, model, property} from '@loopback/rep
 import {Dt} from './dt.model';
 import {Group} from './group.model';
 import {Player} from './player.model';
+import {Match} from './match.model';
 
 @model({
   settings: {
@@ -37,6 +38,12 @@ export class Country extends Entity {
 
   @hasMany(() => Player)
   players: Player[];
+
+  @hasMany(() => Match, {keyTo: 'localTeam'})
+  local_matches: Match[];
+
+  @hasMany(() => Match, {keyTo: 'visitTeam'})
+  visit_matches: Match[];
 
   constructor(data?: Partial<Country>) {
     super(data);

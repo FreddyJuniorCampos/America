@@ -1,5 +1,6 @@
 import {belongsTo, Entity, model, property} from '@loopback/repository';
 import {Campus} from './campus.model';
+import {Country} from './country.model';
 import {CupData} from './cup-data.model';
 import {Referee} from './referee.model';
 
@@ -24,6 +25,18 @@ import {Referee} from './referee.model';
         entityKey: 'id',
         foreignKey: 'campusId',
       },
+      fk_match_local_team: {
+        name: 'fk_match_local_team',
+        entity: 'Country',
+        entityKey: 'id',
+        foreignKey: 'localTeam',
+      },
+      fk_match_visit_team: {
+        name: 'fk_match_visit_team',
+        entity: 'Country',
+        entityKey: 'id',
+        foreignKey: 'visitTeam',
+      },
     },
   },
 })
@@ -34,18 +47,6 @@ export class Match extends Entity {
     generated: true,
   })
   id?: number;
-
-  @property({
-    type: 'string',
-    required: true,
-  })
-  localTeam: string;
-
-  @property({
-    type: 'string',
-    required: true,
-  })
-  visitTeam: string;
 
   @property({
     type: 'date',
@@ -79,6 +80,12 @@ export class Match extends Entity {
 
   @belongsTo(() => Campus)
   campusId: number;
+
+  @belongsTo(() => Country, {name: 'local_team'})
+  localTeam: number;
+
+  @belongsTo(() => Country, {name: 'visit_team'})
+  visitTeam: number;
 
   constructor(data?: Partial<Match>) {
     super(data);
